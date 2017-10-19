@@ -1,0 +1,35 @@
+header {
+	display: block;
+	text-align: center;
+	background-color: lightgray;
+	vertical-align: middle;
+	padding-top: .5em;
+	padding-bottom: .5em;
+}
+
+p {
+	text-indent: -2em;
+	margin-left: 4em;
+}
+
+footer {
+	display: block;
+	text-align: center;
+	background-color: lightgray;
+	vertical-align: middle;
+	padding-top: .5em;
+}
+
+i {
+	display: block;
+	text-align: center;
+	padding: .3em;
+}
+
+.datadesigntitle {
+	text-indent: 4em;
+}
+
+.background {
+	.sec
+}
