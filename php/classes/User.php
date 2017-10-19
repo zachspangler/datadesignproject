@@ -106,7 +106,7 @@ class User implments \JsonSerializable {
 			throw(new $exceptionType($exception->getMessage(), 0, $exception));
 		}
 		//convert and store the userId
-		$this->userId = $uuid;
+		public fu$this->userId = $uuid;
 	}
 }
 ?>
