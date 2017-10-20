@@ -1,7 +1,8 @@
 <?php
 namespace Edu\Cnm\DataDesign;
 
-require_once(dirname(__DIR__, 2) . "/vendor/autoload.php");
+require_once(autoloader.php);
+require_once(dirname(__DIR__, 2) . "../vendor/autoload.php");
 
 use Ramsey\Uuid\Uuid;
 /** Write  all accessors, mutators, and the constructor for the user class on Reddit
@@ -13,6 +14,7 @@ use Ramsey\Uuid\Uuid;
  */
 
 class Post implments \JsonSerializable {
+	use ValidateUuid;
 	use ValidateDate;
 
 	/**
@@ -108,7 +110,7 @@ class Post implments \JsonSerializable {
 	 * accessor method for postUserId
 	 *
 	 * @return Uuid\ value for postUserId
-	 */
+	 **/
 	public function getPostUserId() : Uuid {
 		return($this->postUserId);
 	}
@@ -118,7 +120,7 @@ class Post implments \JsonSerializable {
 	 * @param string | Uuid $newPostUserId new value of tweet profile id
 	 * @throws \RangeException if $newPostUserId is not positive
 	 * @throws \TypeError if $newPostUserId is not an integer
-	 */
+	 **/
 	public function setPostUserId($newPostUserId) : void {
 		try {
 			$uuid = self::validateUuid($newPostUserId);
@@ -127,15 +129,15 @@ class Post implments \JsonSerializable {
 			throw(new $exceptionType($exception->getMessage(), 0,$exception));
 		}
 		//convert and store the user id
-		$this->userPostId = $uuid
+		$this->userPostId = $uuid;
 	}
 	/**
 	 * accessor method for postTitle
 	 *
 	 * @return string value for postTitle
-	 */
+	 **/
 	public function getPostTitle() : string {
-		return($this->postTitle)
+		return($this->postTitle);
 	}
 	/**
 	 * mutator method for postTitle
@@ -146,27 +148,27 @@ class Post implments \JsonSerializable {
 	 * @throws \TypeError if $newPostTitle is not a string
 	 **/
 	public function setPostTitle(string $newPostTitle) : void {
-		// verify the post title content is secure
+		// verify the post title is secure
 		$newPostTitle = trim($newPostTitle);
 		$newPostTitle = filter_var($newPostTitle, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
 		if(empty($newPostTitle) === true) {
 			throw(new \InvalidArgumentException("post title content is empty or insecure"));
 		}
-		// verify the tweet content will fit in the database
+		// verify the post title will fit in the database
 		if(strlen($newPostTitle) > 100) {
 			throw(new \RangeException("post title content too large"));
 		}
-		// store the tweet content
+		// store the post title
 		$this->postTitle = $newPostTitle;
 	}
-		/**
-		 * accessor method for postDetail
-		 *
-		 * @return string value for postDetail
-		 */
-		public function getPostDetail() : string {
-		return($this->PostDetail)
-		}
+	/**
+	 * accessor method for postDetail
+	 *
+	 * @return string value for postDetail
+	 **/
+	public function getPostDetail() : string {
+		return($this->PostDetail);
+	}
 	/**
 	 * mutator method for postDetail
 	 *
@@ -182,13 +184,115 @@ class Post implments \JsonSerializable {
 		if(empty($newPostDetail) === true) {
 			throw(new \InvalidArgumentException("post content is empty or insecure"));
 		}
-		// verify the tweet content will fit in the database
+		// verify the post content will fit in the database
 		if(strlen($newPostDetail) > 6000) {
 			throw(new \RangeException("post content is too large"));
 		}
-		// store the tweet content
+		// store the post content
 		$this->postDetail = $newPostDetail;
 	}
+	/**
+	 * accessor for postSubject
+	 *
+	 * @return string value for postSubject
+	 **/
+	public function getPostSubject() : string {
+		return($this->postSubject);
+	}
+	/**
+	 * mutator method for postSubject
+	 *
+	 * @param string $newPostSubject new value of post title
+	 * @throws \InvalidArgumentException if $newPostSubject is not a string or insecure
+	 * @throws \RangeException if $newPostSubject is > 50 characters
+	 * @throws \TypeError if $newPostSubject is not a string
+	 **/
+	public function setPostSubject(string $newPostSubject) : void {
+		// verify the post subject is secure
+		$newPostSubject = trim($newPostSubject);
+		$newPostSubject = filter_var($newPostSubject, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+		if(empty($newPostSubject) === true) {
+			throw(new \InvalidArgumentException("post subject is empty or insecure"));
+		}
+		// verify the post subject will fit in the database
+		if(strlen($newPostSubject) > 50) {
+			throw(new \RangeException("post subject is too large"));
+		}
+		// store the post subject
+		$this->postSubject = $newPostSubject;
+	}
+	/**
+	 * accessor for postLocation
+	 *
+	 * @return string value for postLocation
+	 **/
+	public function getPostLocation() : string {
+		return($this->postLocation);
+	}
+	/**
+	 * mutator method for postLocation
+	 *
+	 * @param string $newPostLocation new value of post title
+	 * @throws \InvalidArgumentException if $newPostLocation is not a string or insecure
+	 * @throws \RangeException if $newPostLocation is > 50 characters
+	 * @throws \TypeError if $newPostLocation is not a string
+	 **/
+	public function setPostSubject(string $newPostLocation) : void {
+		// verify the post location is secure
+		$newPostLocation = trim($newPostLocation);
+		$newPostLocation = filter_var($newPostLocation, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+		if(empty($newPostLocation) === true) {
+			throw(new \InvalidArgumentException("post location is empty or insecure"));
+		}
+		// verify the post location will fit in the database
+		if(strlen($newPostLocation) > 50) {
+			throw(new \RangeException("post location is too large"));
+		}
+		// store the post location
+		$this->postLocation = $newPostLocation;
+	}
+	/**
+	 * accessor method for postDateTime
+	 *
+	 * @return \DateTime value of postDateTime
+	 **/
+	public function getPostDateTime() : \DateTime {
+		return($this->postDateTime);
+	}
+	/**
+	 * mutator method for postDateTime
+	 *
+	 * @param \DateTime|string|null $newPostDateTime post date as a DateTime object or string (or null to load the current time)
+	 * @throws \InvalidArgumentException if $newPostDateTime is not a valid object or string
+	 * @throws \RangeException if $newPostDateTime is a date that does not exist
+	 **/
+	public function setPostDateTime($newPostDateTime = null) : void {
+		// if the date is null, use the current date and time
+		if($newPostDateTime === null) {
+			$this->postDateTime = new \DateTime();
+			return;
+		}
+		// store the like date using the ValidateDate trait
+		try {
+			$newPostDateTime = self::validateDateTime($newPostDateTime);
+		} catch(\InvalidArgumentException | \RangeException $exception) {
+			$exceptionType = get_class($exception);
+			throw(new $exceptionType($exception->getMessage(), 0, $exception));
+		}
+		$this->postDateTime = $newPostDateTime;
+	}
+	/**
+	 * formats the state variables for JSON serialization
+	 *
+	 * @return array resulting state variables to serialize
+	 **/
+	public function jsonSerialize() {
+		$fields = get_object_vars($this);
+		$fields["postId"] = $this->postId;
+		$fields["postUserId"] = $this->postUserId;
+		//format the date so that the front end can consume it
+		$fields["postDateTime"] = round(floatval($this->postDateTime->format("U.u")) * 1000);
+		return($fields);
+	}
 }
-
 ?>

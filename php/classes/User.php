@@ -1,7 +1,8 @@
 <?php
 namespace Edu\Cnm\DataDesign;
 
-require_once(dirname(__DIR__, 2) . "/vendor/autoload.php");
+require_once(autoloader.php);
+require_once(dirname(__DIR__, 2) . "../vendor/autoload.php");
 
 use Ramsey\Uuid\Uuid;
 /** Write  all accessors, mutators, and the constructor for the user class on Reddit
@@ -10,10 +11,10 @@ use Ramsey\Uuid\Uuid;
  *
  * @author Zachary Spangler <zaspangler@gmail.com>
  * @version 1.0.0
- */
+ **/
 
 class User implments \JsonSerializable {
-	use ValidateDate;
+	use ValidateUuid;
 
 	/**
 	 * id for this User; this is the primary key
@@ -183,7 +184,7 @@ class User implments \JsonSerializable {
 	 * accessor method for userImage
 	 *
 	 * @return string userImage for the users profile
-	 */
+	 **/
 	public function setUserImage() :string {
 		return ($this->userImage);
 	}
@@ -193,7 +194,7 @@ class User implments \JsonSerializable {
 	 * @param string $newUserImage new value of $newUserImage
 	 * @throws \InvalidArgumentException if $newUserImage is not a string or insecure
 	 * @throws \TypeError if $newUserImage is not a string
-	 */
+	 **/
 	public function setUserImage(string $newUserImage) : void {
 		//verify the tweet content is secure
 		$newUserImage = trim($newUserImage);
@@ -208,7 +209,7 @@ class User implments \JsonSerializable {
 	 * accessor method for userHash
 	 *
 	 * @returns string userHash is the value of encyrpted password
-	 */
+	 **/
 	public function getUserHash() : string {
 		return($this->userHash);
 	}
@@ -219,7 +220,7 @@ class User implments \JsonSerializable {
 	 * @throws \InvalidArgumentException if $newUserHash is not a string or insecure
 	 * @throws \RangeException if $newUserHash is not 128 characters
 	 * @throws \TypeError if $newUserHash is not a string
-	 */
+	 **/
 	public function setUserHash(string $newUserHash) : void {
 		//verify the userHash is secure
 		$newUserHash = trim($newUserHash);
@@ -238,7 +239,7 @@ class User implments \JsonSerializable {
 	 * accessor method for userSalt
 	 *
 	 * @returns string representation of the salt hexadecimal
-	 */
+	 **/
 	public function getUserSalt() : string {
 		return($this->userSalt);
 	}
@@ -249,7 +250,7 @@ class User implments \JsonSerializable {
 	 * @throws \InvalidArgumentException if $newUserSalt is not a string or insecure
 	 * @throws \RangeException if $newUserSalt is not 64 characters
 	 * @throws \TypeError if $newUserSalt is not a string
-	 */
+	 **/
 	public function setUserSalt(string $newUserSalt) : void {
 		//verify the userSalt is secure
 		$newUserSalt = trim($newUserSalt);
@@ -269,7 +270,7 @@ class User implments \JsonSerializable {
 	 * accessor method for userActivationToken
 	 *
 	 * @returns string userActivationToken value to confirm user
-	 */
+	 **/
 	public function getUserActivationToken() : string {
 		return($this->userActivationToken);
 	}
@@ -280,7 +281,7 @@ class User implments \JsonSerializable {
 	 * @throws \InvalidArgumentException if $newUserActivationToken is not a string or insecure
 	 * @throws \RangeException if $newUserActivationToken is not exactly 32 characters
 	 * @throws \TypeError if $newUserActivationToken is not a string
-	 */
+	 **/
 	public function setUserActivationToken(string $newUserActivationToken) : void {
 		if($newUserActivationToken = null) {
 			$this->userActivationToken = null;
@@ -296,6 +297,17 @@ class User implments \JsonSerializable {
 		}
 		$this->userActivationToken;
 	}
+	/**
+	 * formats the state variables for JSON serialization
+	 *
+	 * @return array resulting state variables to serialize
+	 **/
+	public function jsonSerialize() {
+		$fields = get_object_vars($this);
+		$fields["userId"] = $this->profileId->toString();
+		unset($fields["userHash"]);
+		unset($fields["userSalt"]);
+		return ($fields);
+	}
 }
-
 ?>
