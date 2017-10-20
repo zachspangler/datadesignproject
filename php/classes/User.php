@@ -66,7 +66,7 @@ class User implments \JsonSerializable {
 	 * @throws \TypeError if data types violate type hits
 	 * @throws \Exception if some other exception occurs
 	 **/
-	public function __construct(?int $newUserId, string $newuserEmail, string $newUserName,  string$newUserImage, string $newUserHash, string $newUserSalt, string $newUserActivation = null) {
+	public function __construct(?string $newUserId, string $newuserEmail, string $newUserName,  string$newUserImage, string $newUserHash, string $newUserSalt, string $newUserActivation = null) {
 		try {
 			$this->setUserId($newUserId);
 			$this->setUserEmail($newuserEmail);
@@ -96,7 +96,7 @@ class User implments \JsonSerializable {
 		public function setUserId( $newUserId) : void {
 			try {
 				$uuid = self::validateUuid($newUserId);
-			} catch (\InvalidArgumentException | \RangeException |\Exception | \TypeError $exception) {
+			} catch (\InvalidArgumentException | \RangeException | \Exception | \TypeError $exception) {
 				$exceptionType = get_class($exception);
 				throw(new $exceptionType($exception->getMessage(), 0, $exception));
 			}
@@ -149,7 +149,7 @@ class User implments \JsonSerializable {
 		$newUserEmail = trim($newUserEmail);
 		$newUserEmail = filter_var($newUserEmail, FILTER_VALIDATE_EMAIL, FILTER_FLAG_NO_ENCODE_QUOTES);
 		if (empty($newUserEmail) === true) {
-			throw(new InvalidArgumentException("user email is empty or insecure"));
+			throw(new \InvalidArgumentException("user email is empty or insecure"));
 		}
 		//store the userEmail
 		$this->userEmail = $newUserEmail;
@@ -174,7 +174,7 @@ class User implments \JsonSerializable {
 		$newUserName = trim($newUserName);
 		$newUserName = filter_var($newUserName, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
 		if (empty($newUserName) === true) {
-			throw(new InvalidArgumentException("Username is empty or insecure"));
+			throw(new \InvalidArgumentException("Username is empty or insecure"));
 		}
 		//store the userName
 		$this->userName = $newUserName;

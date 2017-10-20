@@ -53,57 +53,81 @@ class Post implments \JsonSerializable {
 	/**
 	 * constructor for this post
 	 *
-	 * @param string $newUserId id of user or null if new user
-	 * @param string $newuserEmail email of user to setup account
-	 * @param string $newuserName screen name for user, this will be shown to the public for all tweets
-	 * @param string $newuserImage image that will be displayed next to the username, this can be null if user does not upload an image
-	 * @param string $newuserHash user hash will be used to store the password for this User
-	 * @param string $newuserSalt salt will be used to strengthen and further encrypt the users password
-	 * @param string $newuserActivationToken activation token used only upon initial signup, this can be null
+	 * @param string $postId string that identifies number used to identify the post
+	 * @param string $postUserId string that is identifier for the user creating the post
+	 * @param string $postTitle string that is the title of the post
+	 * @param string $postDetail string that is the content of the post
+	 * @param string $postSubject string that provides detail about the post subject
+	 * @param string $postLocation string that provides detail about the location the post is about, may be null
+	 * @param \DateTime $postDateTime datetime of when the post was created
 	 * @throws \InvalidArgumentException if data types are not valid
 	 * @throws \RangeException if data values are out of bounds
 	 * @throws \TypeError if data types violate type hits
 	 * @throws \Exception if some other exception occurs
 	 **/
-	public
-	function __construct($newUserId, $newuserEmail, $newUserName, $newUserImage, $newUserHash, $newUserSalt, $newUserActivation = null) {
+	public function __construct(string $postId, string $PostUserId, string $postTitle, string $postDetail, string $postSubject, string $postLocation, string $postDateTime) {
 		try {
-			$this->setUserId($newUserId);
-			$this->setUserEmail($newuserEmail);
-			$this->setUserName($newUserName);
-			$this->setUserImage($newUserImage);
-			$this->setUserHash($newUserHash);
-			$this->setUserSalt($newUserSalt);
-			$this->setUserActivationToken($newUserActivation);
+			$this->setPostId($newPostId);
+			$this->setPostUserId($newUserPostId);
+			$this->setPostTitle($newPostTitleId);
+			$this->setPostDetail($newPostDetail);
+			$this->setPostSubject($newPostSubject);
+			$this->setPostLocation($newPostLocation);
+			$this->setPostDateTime($newPostDateTime);
 		} catch(\InvalidArgumentException | \RangeException | \Exception | \TypeError $exception) {
 			$exceptionType = get_class($exception);
 			throw (new $exceptionType($exception->getMessage(), 0, $exception));
 		}
 	}
 	/**
-	 * accessor method for userId
+	 * accessor method for postId
 	 *
-	 * @return string Uuid value of userId
+	 * @return string Uuid value of postId
 	 **/
-	public function getUserId() : Uuid {
-		return ($this->userId);
+	public function getPostId() : Uuid {
+		return ($this->postId);
 	}
 	/**
-	 * mutator method for userId
+	 * mutator method for postId
 	 *
-	 * @param Uuid/string $newUserId new value of userId
-	 * @throws \RangeException if $newUserId is not positive
-	 * @throws \TypeError if $newTweetId is not a Uuid or string
+	 * @param Uuid/string $newPostId new value of userId
+	 * @throws \RangeException if $newPostId is not positive
+	 * @throws \TypeError if $newPostId is not a Uuid or string
 	 **/
-	public function setUserId( $newUserId) : void {
+	public function setPostId($newPostId) : void {
 		try {
-			$uuid = self::validateUuid($newUserId);
+			$uuid = self::validateUuid($newPostId);
 		} catch (\InvalidArgumentException | \RangeException |\Exception | \TypeError $exception) {
 			$exceptionType = get_class($exception);
 			throw(new $exceptionType($exception->getMessage(), 0, $exception));
 		}
 		//convert and store the userId
-		$this->userId = $uuid;
+		$this->postId = $uuid;
+	}
+	/**
+	 * accessor method for postUserId
+	 *
+	 * @return Uuid\ value for postUserId
+	 */
+	public function getPostUserId() : Uuid {
+		return($this->postUserId);
+	}
+	/**
+	 * mutator method for postUserId
+	 *
+	 * @param string | Uuid $newPostUserId new value of tweet profile id
+	 * @throws \RangeException if $newPostUserId is not positive
+	 * @throws \TypeError if $newPostUserId is not an integer
+	 */
+	public function setPostUserId($newPostUserId) : void {
+		try {
+			$uuid = self::validateUuid($newPostUserId);
+		} catch(\InvalidArgumentException | \RangeException | \Exception | \TypeError $exception) {
+			$exceptionType = get_class($exception);
+			throw(new $exceptionType($exception->getMessage(), 0,$exception));
+		}
+		//convert and store the user id
+		$this->userPostId = $uuid
 	}
 }
 
