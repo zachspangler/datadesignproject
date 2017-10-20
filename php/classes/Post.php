@@ -129,6 +129,66 @@ class Post implments \JsonSerializable {
 		//convert and store the user id
 		$this->userPostId = $uuid
 	}
+	/**
+	 * accessor method for postTitle
+	 *
+	 * @return string value for postTitle
+	 */
+	public function getPostTitle() : string {
+		return($this->postTitle)
+	}
+	/**
+	 * mutator method for postTitle
+	 *
+	 * @param string $newPostTitle new value of post title
+	 * @throws \InvalidArgumentException if $newPostTitle is not a string or insecure
+	 * @throws \RangeException if $newPostTitle is > 100 characters
+	 * @throws \TypeError if $newPostTitle is not a string
+	 **/
+	public function setPostTitle(string $newPostTitle) : void {
+		// verify the post title content is secure
+		$newPostTitle = trim($newPostTitle);
+		$newPostTitle = filter_var($newPostTitle, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+		if(empty($newPostTitle) === true) {
+			throw(new \InvalidArgumentException("post title content is empty or insecure"));
+		}
+		// verify the tweet content will fit in the database
+		if(strlen($newPostTitle) > 100) {
+			throw(new \RangeException("post title content too large"));
+		}
+		// store the tweet content
+		$this->postTitle = $newPostTitle;
+	}
+		/**
+		 * accessor method for postDetail
+		 *
+		 * @return string value for postDetail
+		 */
+		public function getPostDetail() : string {
+		return($this->PostDetail)
+		}
+	/**
+	 * mutator method for postDetail
+	 *
+	 * @param string $newPostDetail new value of post title
+	 * @throws \InvalidArgumentException if $newPostDetail is not a string or insecure
+	 * @throws \RangeException if $newPostDetail is > 6000 characters
+	 * @throws \TypeError if $newPostDetail is not a string
+	 **/
+	public function setPostDetail(string $newPostDetail) : void {
+		// verify the post content is secure
+		$newPostDetail = trim($newPostDetail);
+		$newPostDetail = filter_var($newPostDetail, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+		if(empty($newPostDetail) === true) {
+			throw(new \InvalidArgumentException("post content is empty or insecure"));
+		}
+		// verify the tweet content will fit in the database
+		if(strlen($newPostDetail) > 6000) {
+			throw(new \RangeException("post content is too large"));
+		}
+		// store the tweet content
+		$this->postDetail = $newPostDetail;
+	}
 }
 
 ?>
