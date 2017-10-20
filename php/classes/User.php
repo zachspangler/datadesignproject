@@ -1,4 +1,9 @@
 <?php
+namespace Edu\Cnm\DataDesign;
+
+require_once(dirname(__DIR__, 2) . "/vendor/autoload.php");
+
+use Ramsey\Uuid\Uuid;
 /** Write  all accessors, mutators, and the constructor for the user class on Reddit
  *
  * Long comment need here:
@@ -11,8 +16,8 @@ class User implments \JsonSerializable {
 	use ValidateDate;
 
 	/**
-	 * id for this User, this is the primary key
-	 * @var Uuid $userId
+	 * id for this User; this is the primary key
+	 * @var string Uuid $userId
 	 **/
 	private $userId;
 	/**
@@ -21,12 +26,12 @@ class User implments \JsonSerializable {
 	 **/
 	private $userEmail;
 	/**
-	 * username for this User, this will be the name displayed to the public
+	 * username for this User, this will be the name displayed to the public; this is a unique and indexed
 	 * @var string $userName
 	 **/
 	private $userName;
 	/**
-	 * this is the image that will be displayed next to the username, this can be null
+	 * this is the image that will be displayed next to the username, this can be null; this is a unique and indexed
 	 * @var string $userImage
 	 **/
 	private $userImage;
@@ -49,7 +54,7 @@ class User implments \JsonSerializable {
 	/**
 	 * constructor for this user
 	 *
-	 * @param string\Uuid $newUserId id of user or null if new user
+	 * @param string $newUserId id of user or null if new user
 	 * @param string $newuserEmail email of user to setup account
 	 * @param string $newuserName screen name for user, this will be shown to the public for all tweets
 	 * @param string $newuserImage image that will be displayed next to the username, this can be null if user does not upload an image
@@ -61,8 +66,7 @@ class User implments \JsonSerializable {
 	 * @throws \TypeError if data types violate type hits
 	 * @throws \Exception if some other exception occurs
 	 **/
-	public
-	function __construct($newUserId, $newuserEmail, $newUserName, $newUserImage, $newUserHash, $newUserSalt, $newUserActivation = null) {
+	public function __construct(?int $newUserId, string $newuserEmail, string $newUserName,  string$newUserImage, string $newUserHash, string $newUserSalt, string $newUserActivation = null) {
 		try {
 			$this->setUserId($newUserId);
 			$this->setUserEmail($newuserEmail);
@@ -74,6 +78,30 @@ class User implments \JsonSerializable {
 		} catch(\InvalidArgumentException | \RangeException | \Exception | \TypeError $exception) {
 			$exceptionType = get_class($exception);
 			throw (new $exceptionType($exception->getMessage(), 0, $exception));
+		}/**
+		 * accessor method for userId
+		 *
+		 * @return string Uuid value of userId
+		 **/
+		public function getUserId() : Uuid {
+			return ($this->userId);
+		}
+		/**
+		 * mutator method for userId
+		 *
+		 * @param Uuid/string $newUserId new value of userId
+		 * @throws \RangeException if $newUserId is not positive
+		 * @throws \TypeError if $newTweetId is not a Uuid or string
+		 **/
+		public function setUserId( $newUserId) : void {
+			try {
+				$uuid = self::validateUuid($newUserId);
+			} catch (\InvalidArgumentException | \RangeException |\Exception | \TypeError $exception) {
+				$exceptionType = get_class($exception);
+				throw(new $exceptionType($exception->getMessage(), 0, $exception));
+			}
+			//convert and store the userId
+			$this->userId = $uuid;
 		}
 	}
 	/**
@@ -119,7 +147,7 @@ class User implments \JsonSerializable {
 	public function setUserEmail (string $newUserEmail) : void {
 		//verify the email is secure
 		$newUserEmail = trim($newUserEmail);
-		$newUserEmail = filter_var($newUserEmail, FILTER_SANITIZE_EMAIL, FILTER_FLAG_NO_ENCODE_QUOTES);
+		$newUserEmail = filter_var($newUserEmail, FILTER_VALIDATE_EMAIL, FILTER_FLAG_NO_ENCODE_QUOTES);
 		if (empty($newUserEmail) === true) {
 			throw(new InvalidArgumentException("user email is empty or insecure"));
 		}
@@ -269,4 +297,5 @@ class User implments \JsonSerializable {
 		$this->userActivationToken;
 	}
 }
+
 ?>
