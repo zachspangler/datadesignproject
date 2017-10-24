@@ -1,7 +1,7 @@
 <?php
 namespace Edu\Cnm\DataDesign;
 
-require_once(autoloader.php);
+require_once("autoloader.php");
 require_once(dirname(__DIR__, 2) . "../vendor/autoload.php");
 
 use Ramsey\Uuid\Uuid;
@@ -13,7 +13,7 @@ use Ramsey\Uuid\Uuid;
  * @version 1.0.0
  */
 
-class Comments implments \JsonSerializable {
+class Comments implements \JsonSerializable {
 	use ValidateUuid;
 	use ValidateDate;
 
@@ -44,7 +44,7 @@ class Comments implments \JsonSerializable {
 	private $commentDetail;
 	/**
 	 * the date and time of the comment
-	 * @var \DateTime\string\null $postDateTime
+	 * @var \DateTime|string|null $postDateTime
 	 **/
 	private $commentDateTime;
 	/**
@@ -61,8 +61,7 @@ class Comments implments \JsonSerializable {
 	 * @throws \TypeError if data types violate type hits
 	 * @throws \Exception if some other exception occurs
 	 **/
-	public
-	function __construct(string $commentId, string $commentPostId, string $commentUserId, string $commentCommentId, string CommentDetail, \DateTime $commentDateTime) {
+	public function __construct(string $commentId, string $commentPostId, string $commentUserId, string $commentCommentId, string $CommentDetail, \DateTime $commentDateTime) {
 		try {
 			$this->setCommentId($newCommentId);
 			$this->setCommentPostId($newCommentPostId);
@@ -117,7 +116,7 @@ class Comments implments \JsonSerializable {
 	 **/
 	public function setCommentPostId($newCommentPostId) : void {
 		try {
-			$uuid = self::validateUuid($newCommentId);
+			$uuid = self::validateUuid($newCommentPostId);
 		} catch (\InvalidArgumentException | \RangeException |\Exception | \TypeError $exception) {
 			$exceptionType = get_class($exception);
 			throw(new $exceptionType($exception->getMessage(), 0, $exception));
@@ -165,7 +164,7 @@ class Comments implments \JsonSerializable {
 	 * @throws \RangeException if $newCommentCommentId is not positive
 	 * @throws \TypeError if $newCommentCommentId not a Uuid or string
 	 **/
-	public function setCommentUserId($newCommentCommentId) : void {
+	public function setCommentCommentId($newCommentCommentId) : void {
 		try {
 			$uuid = self::validateUuid($newCommentCommentId);
 		} catch (\InvalidArgumentException | \RangeException |\Exception | \TypeError $exception) {
@@ -242,10 +241,10 @@ class Comments implments \JsonSerializable {
 	 **/
 	public function jsonSerialize() {
 		$fields = get_object_vars($this);
-		$fields["commentId"] = $this->commentId;
-		$fields["commentPostId"] = $this->commentPostId;
-		$fields["commentUserId"] = $this->commentUserId;
-		$fields["commentCommentId"] = $this->commentCommentId;
+//		$fields["commentId"] = $this->commentId;
+//		$fields["commentPostId"] = $this->commentPostId;
+//		$fields["commentUserId"] = $this->commentUserId;
+//		$fields["commentCommentId"] = $this->commentCommentId;
 		//format the date so that the front end can consume it
 		$fields["commentDateTime"] = round(floatval($this->commentDateTime->format("U.u")) * 1000);
 		return($fields);

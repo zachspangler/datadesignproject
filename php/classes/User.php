@@ -1,7 +1,7 @@
 <?php
 namespace Edu\Cnm\DataDesign;
 
-require_once(autoloader.php);
+require_once("autoloader.php");
 require_once(dirname(__DIR__, 2) . "../vendor/autoload.php");
 
 use Ramsey\Uuid\Uuid;
@@ -13,7 +13,7 @@ use Ramsey\Uuid\Uuid;
  * @version 1.0.0
  **/
 
-class User implments \JsonSerializable {
+class User implements \JsonSerializable {
 	use ValidateUuid;
 
 	/**
@@ -79,7 +79,9 @@ class User implments \JsonSerializable {
 		} catch(\InvalidArgumentException | \RangeException | \Exception | \TypeError $exception) {
 			$exceptionType = get_class($exception);
 			throw (new $exceptionType($exception->getMessage(), 0, $exception));
-		}/**
+		}
+	}
+		/**
 		 * accessor method for userId
 		 *
 		 * @return string Uuid value of userId
@@ -104,32 +106,6 @@ class User implments \JsonSerializable {
 			//convert and store the userId
 			$this->userId = $uuid;
 		}
-	}
-	/**
-	 * accessor method for userId
-	 *
-	 * @return string Uuid value of userId
-	 **/
-	public function getUserId() : Uuid {
-		return ($this->userId);
-	}
-	/**
-	 * mutator method for userId
-	 *
-	 * @param Uuid/string $newUserId new value of userId
-	 * @throws \RangeException if $newUserId is not positive
-	 * @throws \TypeError if $newTweetId is not a Uuid or string
-	 **/
-	public function setUserId( $newUserId) : void {
-		try {
-			$uuid = self::validateUuid($newUserId);
-		} catch (\InvalidArgumentException | \RangeException |\Exception | \TypeError $exception) {
-			$exceptionType = get_class($exception);
-			throw(new $exceptionType($exception->getMessage(), 0, $exception));
-		}
-		//convert and store the userId
-		$this->userId = $uuid;
-	}
 	/**
 	 * accessor method for userEmail method
 	 *
@@ -185,7 +161,7 @@ class User implments \JsonSerializable {
 	 *
 	 * @return string userImage for the users profile
 	 **/
-	public function setUserImage() :string {
+	public function getUserImage() :string {
 		return ($this->userImage);
 	}
 	/**
@@ -298,15 +274,112 @@ class User implments \JsonSerializable {
 		$this->userActivationToken;
 	}
 	/**
+	 * inserts this user into mySQL
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @throws \PDOException when mySQL related errors occur
+	 * @throws \TypeError if $pdo is not a PDO connection object
+	 **/
+	public function insert(\PDO $pdo): void {
+		// enforce the userId is null (i.e., don't insert a profile that already exists)
+		if($this->userId !== null) {
+			throw(new \PDOException("not a new profile"));
+		}
+		// create query template
+		$query = "INSERT INTO users(userId, userEmail, userName, userImage, userHash, userSalt, userActivationToken) VALUES (:userId, :userEmail, :userName, :userImage, :userHash, :userSalt, :userActivationToken)";
+		$statement = $pdo->prepare($query);
+		// bind the member variables to the place holders in the template
+		$parameters = ["userId" => $this->userId, "userEmail" => $this->userEmail, "userName" => $this->userName, "userImage" => $this->userImage, "userHash" => $this->userHash, "userSalt" => $this->userSalt, "userActivationToken" => $this->userActivationToken];
+		$statement->execute($parameters);
+		// update the null profileId with what mySQL just gave us
+		$this->profileId = intval($pdo->lastInsertId());
+	}
+	/**
+	 * deletes this User from mySQL
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @throws \PDOException when mySQL related errors occur
+	 * @throws \TypeError if $pdo is not a PDO connection object
+	 **/
+	public function delete(\PDO $pdo): void {
+		// enforce the profileId is not null (i.e., don't delete a profile that does not exist)
+		if($this->userId === null) {
+			throw(new \PDOException("unable to delete a profile that does not exist"));
+		}
+		// create query template
+		$query = "DELETE FROM users WHERE userId = :userId";
+		$statement = $pdo->prepare($query);
+		// bind the member variables to the place holders in the template
+		$parameters = ["userId" => $this->userId];
+		$statement->execute($parameters);
+	}
+	/**
+	 * updates this Profile from mySQL
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @throws \PDOException when mySQL related errors occur
+	 * @throws \TypeError if $pdo is not a PDO connection object
+	 **/
+	public function update(\PDO $pdo): void {
+		// enforce the profileId is not null (i.e., don't update a profile that does not exist)
+		if($this->userId === null) {
+			throw(new \PDOException("unable to delete a profile that does not exist"));
+		}
+		// create query template
+		$query = "UPDATE users SET userId = :userId,  userEmail = :userEmail, userName = :userName, userImage = :userImage, userHash = :userHash, userSalt = :userSalt, userActivationToken = :userActivationToken WHERE userId = :userId";
+		$statement = $pdo->prepare($query);
+		// bind the member variables to the place holders in the template
+		$parameters = ["userId" => $this->userId, "userEmail" => $this->userEmail, "userName" => $this->userName, "userImage" => $this->userImage, "userHash" => $this->userHash, "userSalt" => $this->userSalt, "userActivationToken" => $this->userActivationToken];
+		$statement->execute($parameters);
+	}
+	/**
+	 * gets the user by userId
+	 *
+	 * @param \PDO $pdo $pdo PDO connection object
+	 * @param string $userId user Id to search for
+	 * @return User|null user or null if not found
+	 * @throws \PDOException when mySQL related errors occur
+	 * @throws \TypeError when a variable are not the correct data type
+	 **/
+	public static function getUserByUserId(\PDO $pdo, string $profileId):?User {
+		// sanitize the user id before searching
+		try {
+			$userId = self::validateUuid($userId);
+		} catch(\InvalidArgumentException | \RangeException | \Exception | \TypeError $exception) {
+			throw(new \PDOException($exception->getMessage(), 0, $exception));
+		}
+
+		// create query template
+		$query = "SELECT userId, userEmail, userName, userImage, userHash, userSalt, userActivationToken WHERE userId = :userId";
+		$statement = $pdo->prepare($query);
+		// bind the user id to the place holder in the template
+		$parameters = ["userId" => $userId->getBytes()];
+		$statement->execute($parameters);
+
+		// grab the Profile from mySQL
+		try {
+			$user = null;
+			$statement->setFetchMode(\PDO::FETCH_ASSOC);
+			$row = $statement->fetch();
+			if($row !== false) {
+				$user = new User($row["userId"], $row["userEmail"], $row["userName"], $row["userImage"], $row["userHash"], $row["userSalt"], $row["userActivationToken"]);
+			}
+		} catch(\Exception $exception) {
+			// if the row couldn't be converted, rethrow it
+			throw(new \PDOException($exception->getMessage(), 0, $exception));
+		}
+		return ($user);
+	}
+	/**
 	 * formats the state variables for JSON serialization
 	 *
 	 * @return array resulting state variables to serialize
 	 **/
 	public function jsonSerialize() {
 		$fields = get_object_vars($this);
-		$fields["userId"] = $this->profileId->toString();
-		unset($fields["userHash"]);
-		unset($fields["userSalt"]);
+		$fields["userId"] = $this->userId->toString();
+//		unset($fields["userHash"]);
+//		unset($fields["userSalt"]);
 		return ($fields);
 	}
 }

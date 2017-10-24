@@ -1,7 +1,7 @@
 <?php
 namespace Edu\Cnm\DataDesign;
 
-require_once(autoloader.php);
+require_once("autoloader.php");
 require_once(dirname(__DIR__, 2) . "../vendor/autoload.php");
 
 use Ramsey\Uuid\Uuid;
@@ -13,7 +13,7 @@ use Ramsey\Uuid\Uuid;
  * @version 1.0.0
  */
 
-class Post implments \JsonSerializable {
+class Post implements \JsonSerializable {
 	use ValidateUuid;
 	use ValidateDate;
 
@@ -109,7 +109,7 @@ class Post implments \JsonSerializable {
 	/**
 	 * accessor method for postUserId
 	 *
-	 * @return Uuid\ value for postUserId
+	 * @return Uuid |value for postUserId
 	 **/
 	public function getPostUserId() : Uuid {
 		return($this->postUserId);
@@ -237,7 +237,7 @@ class Post implments \JsonSerializable {
 	 * @throws \RangeException if $newPostLocation is > 50 characters
 	 * @throws \TypeError if $newPostLocation is not a string
 	 **/
-	public function setPostSubject(string $newPostLocation) : void {
+	public function setPostLocation(string $newPostLocation) : void {
 		// verify the post location is secure
 		$newPostLocation = trim($newPostLocation);
 		$newPostLocation = filter_var($newPostLocation, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
@@ -288,8 +288,8 @@ class Post implments \JsonSerializable {
 	 **/
 	public function jsonSerialize() {
 		$fields = get_object_vars($this);
-		$fields["postId"] = $this->postId;
-		$fields["postUserId"] = $this->postUserId;
+//		$fields["postId"] = $this->postId;
+//		$fields["postUserId"] = $this->postUserId;
 		//format the date so that the front end can consume it
 		$fields["postDateTime"] = round(floatval($this->postDateTime->format("U.u")) * 1000);
 		return($fields);
