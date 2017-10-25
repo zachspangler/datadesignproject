@@ -55,9 +55,9 @@ class User implements \JsonSerializable {
 	/**
 	 * constructor for this user
 	 *
-	 * @param string $newUserId id of user or null if new user
+	 * @param string|Uuid $newUserId id of user or null if new user
 	 * @param string $newuserEmail email of user to setup account
-	 * @param string $newuserName screen name for user, this will be shown to the public for all tweets
+	 * @param string $newuserName screen name for user, this will be shown to the public for all posts
 	 * @param string $newuserImage image that will be displayed next to the username, this can be null if user does not upload an image
 	 * @param string $newuserHash user hash will be used to store the password for this User
 	 * @param string $newuserSalt salt will be used to strengthen and further encrypt the users password
@@ -94,7 +94,7 @@ class User implements \JsonSerializable {
 		 *
 		 * @param Uuid/string $newUserId new value of userId
 		 * @throws \RangeException if $newUserId is not positive
-		 * @throws \TypeError if $newTweetId is not a Uuid or string
+		 * @throws \TypeError if $newId is not a Uuid or string
 		 **/
 		public function setUserId( $newUserId) : void {
 			try {
@@ -172,7 +172,7 @@ class User implements \JsonSerializable {
 	 * @throws \TypeError if $newUserImage is not a string
 	 **/
 	public function setUserImage(string $newUserImage) : void {
-		//verify the tweet content is secure
+		//verify the image content is secure
 		$newUserImage = trim($newUserImage);
 		$newUserImage = filter_var($newUserImage,FILTER_SANITIZE_STRING,FILTER_FLAG_NO_ENCODE_QUOTES);
 		if(empty($newUserImage) === true) {
@@ -339,7 +339,7 @@ class User implements \JsonSerializable {
 	 * @param string $userId user Id to search for
 	 * @return User|null user or null if not found
 	 * @throws \PDOException when mySQL related errors occur
-	 * @throws \TypeError when a variable are not the correct data type
+	 * @throws \TypeError when a variable is not the correct data type
 	 **/
 	public static function getUserByUserId(\PDO $pdo, string $profileId):?User {
 		// sanitize the user id before searching

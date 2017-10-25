@@ -39,23 +39,23 @@ class Comments implements \JsonSerializable {
 	private $commentCommentId;
 	/**
 	 * this is the comment content
-	 * @var string $postSubject
+	 * @var string $commentDetail
 	 **/
 	private $commentDetail;
 	/**
 	 * the date and time of the comment
-	 * @var \DateTime|string|null $postDateTime
+	 * @var \DateTime|string|null $commentDateTime
 	 **/
 	private $commentDateTime;
 	/**
-	 * constructor for this post
+	 * constructor for this comment
 	 *
-	 * @param string $commentId string that identifies number used to identify the comment
-	 * @param string $commentPostId string that is identifier for the post the comment is made on
-	 * @param string $commentUserId string that is identifier for the user creating the comment
-	 * @param string $commentCommentId string that identifies the comment the comment is made on
+	 * @param string|Uuid $commentId string that identifies number used to identify the comment
+	 * @param string|Uuid $commentPostId string that is identifier for the post the comment is made on
+	 * @param string|Uuid $commentUserId string that is identifier for the user creating the comment
+	 * @param string|Uuid $commentCommentId string that identifies the comment the comment is made on
 	 * @param string $commentDetail string that provides the content of the comment
-	 * @param \DateTime $commentDateTime datetime of when the post was created
+	 * @param \DateTime $commentDateTime datetime of when the comment was created
 	 * @throws \InvalidArgumentException if data types are not valid
 	 * @throws \RangeException if data values are out of bounds
 	 * @throws \TypeError if data types violate type hits
@@ -180,7 +180,7 @@ class Comments implements \JsonSerializable {
 	 * @return string value for commentDetail
 	 **/
 	public function getCommentDetail() : string {
-		return($this->CommentDetail);
+		return($this->commentDetail);
 	}
 	/**
 	 * mutator method for commentDetail
@@ -205,17 +205,17 @@ class Comments implements \JsonSerializable {
 		$this->commentDetail = $newCommentDetail;
 	}
 	/**
-	 * accessor method for postDateTime
+	 * accessor method for commentDateTime
 	 *
-	 * @return \DateTime value of postDateTime
+	 * @return \DateTime value of commentDateTime
 	 **/
-	public function getPostDateTime() : \DateTime {
-		return($this->postDateTime);
+	public function getCommentsDateTime() : \DateTime {
+		return($this->commentDateTime);
 	}
 	/**
 	 * mutator method for commentDateTime
 	 *
-	 * @param \DateTime|string|null $newCommentDateTime post date as a DateTime object or string (or null to load the current time)
+	 * @param \DateTime|string|null $newCommentDateTime comment date as a DateTime object or string (or null to load the current time)
 	 * @throws \InvalidArgumentException if $newCommentDateTime is not a valid object or string
 	 * @throws \RangeException if $newCommentDateTime is a date that does not exist
 	 **/
@@ -233,6 +233,86 @@ class Comments implements \JsonSerializable {
 			throw(new $exceptionType($exception->getMessage(), 0, $exception));
 		}
 		$this->commentDateTime = $newCommentDateTime;
+	}
+	/**
+	 * inserts this Comment into mySQL
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @throws \PDOException when mySQL related errors occur
+	 **/
+	public function insert(\PDO $pdo) : void {
+		// create query template
+		$query = "INSERT INTO `comments`(commentId, commentPostId, commentUserId, commentCommentId, commentDetail, commentDateTime) VALUES(:commentId, :commentPostId, :commentUserId, :commentCommentId, :commentDetail, :commentDateTime)";
+		$statement = $pdo->prepare($query);
+		// bind the member variables to the place holders in the template
+		$formattedDate = $this->commentDateTime->format("Y-m-d H:i:s.u");
+		$parameters = ["commentId" => $this->commentId->getBytes(), "commentPostId" => $this->commentPostId->getBytes(), "commentUserId" => $this->commentUserId->getBytes(), "commentCommentId" => $this->commentCommentId->getBytes(), "commentDetail" => $this->commentDetail, "commentDateTime" => $formattedDate];
+		$statement->execute($parameters);
+	}
+	/**
+	 * deletes this Comment from mySQL
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @throws \PDOException when mySQL related errors occur
+	 **/
+	public function delete(\PDO $pdo) : void {
+		// create query template
+		$query = "DELETE FROM `comments` WHERE commentId = :commentId";
+		$statement = $pdo->prepare($query);
+		//bind the member variables to the placeholders in the template
+		$parameters = ["commentId" => $this->commentId->getBytes(), "commentPostId" => $this->commentPostId->getBytes(), "commentUserId" => $this->commentUserId->getBytes(), "commentCommentId" => $this->commentCommentId->getBytes(), "commentDetail" => $this->commentDetail, "commentDateTime" => $formattedDate];
+		$statement->execute($parameters);
+	}
+	/**
+	 * updates this Comment in mySQL
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @throws \PDOException when mySQL related errors occur
+	 * @throws \TypeError if $pdo is not a PDO connection object
+	 **/
+	public function update(\PDO $pdo) : void {
+		// create query template
+		$query = "UPDATE comments SET commentId = :commentId, commentPostId = :commentPostId, commentUserId = :commentUserId, commentCommentId = :commentCommentId, commentDetail = :commentDetail, commentDateTime = :commentDateTime WHERE commentId = :commentId";
+		$statement = $pdo->prepare($query);
+		$formattedDate = $this->commentDateTime->format("Y-m-d H:i:s.u");
+		$parameters = ["commentId" => $this->commentId->getBytes(), "commentPostId" => $this->commentPostId->getBytes(), "commentUserId" => $this->commentUserId->getBytes(), "commentCommentId" => $this->commentCommentId->getBytes(), "commentDetail" => $this->commentDetail, "commentDateTime" => $formattedDate];
+		$statement->execute($parameters);
+	}
+/**
+* gets the Comment by commentId
+*
+* @param \PDO $pdo PDO connection object
+* @param string $commentId comment id to search for
+* @return Comments|null comment found or null if not found
+* @throws \PDOException when mySQL related errors occur
+* @throws \TypeError when a variable are not the correct data type
+**/
+	public static function getCommentByCommentId(\PDO $pdo, string $commentId) : ?Comments {
+		// sanitize the commentId before searching
+		try {
+			$commentId = self::validateUuid($commentId);
+		} catch(\InvalidArgumentException | \RangeException | \Exception | \TypeError $exception) {
+			throw(new \PDOException($exception->getMessage(), 0, $exception));
+		}
+		// create query template
+		$query = "SELECT commentId, commentPostId, commentUserId, commentCommentId, commentDetail, commentDateTime FROM comments WHERE commentId = :commentId";
+		$statement = $pdo->prepare($query);
+		// bind the commentId to the place holder in the template
+		$parameters = ["commentId" => $commentId->getBytes()];
+		$statement->execute($parameters);
+		// grab the comment from mySQL
+		try {
+			$comment = null;
+			$statement->setFetchMode(\PDO::FETCH_ASSOC);
+			$row = $statement->fetch();
+			if($row !== false) {
+				$comment = new Comments($row["commentId"], $row["commentPostId"], $row["commentUserId"], $row["commentCommentId"], $row["commentDetail"], $row["commentDateTime"]);
+			}
+		} catch(\Exception $exception) {
+			// if the row couldn't be converted, rethrow it
+			throw(new \PDOException($exception->getMessage(), 0, $exception));
+		}
+		return($comment);
 	}
 	/**
 	 * formats the state variables for JSON serialization

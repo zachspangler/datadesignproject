@@ -38,7 +38,7 @@ class Post implements \JsonSerializable {
 	 **/
 	private $postDetail;
 	/**
-	 * post subject is the topic the user hash will be used to store the password for this User, this can be null
+	 * post subject is the topic, this can be null
 	 * @var string $postSubject
 	 **/
 	private $postSubject;
@@ -55,8 +55,8 @@ class Post implements \JsonSerializable {
 	/**
 	 * constructor for this post
 	 *
-	 * @param string $postId string that identifies number used to identify the post
-	 * @param string $postUserId string that is identifier for the user creating the post
+	 * @param string|Uuid $postId string that identifies number used to identify the post
+	 * @param string|Uuid $postUserId string that is identifier for the user creating the post
 	 * @param string $postTitle string that is the title of the post
 	 * @param string $postDetail string that is the content of the post
 	 * @param string $postSubject string that provides detail about the post subject
@@ -92,7 +92,7 @@ class Post implements \JsonSerializable {
 	/**
 	 * mutator method for postId
 	 *
-	 * @param Uuid/string $newPostId new value of userId
+	 * @param Uuid/string $newPostId new value of postId
 	 * @throws \RangeException if $newPostId is not positive
 	 * @throws \TypeError if $newPostId is not a Uuid or string
 	 **/
@@ -103,7 +103,7 @@ class Post implements \JsonSerializable {
 			$exceptionType = get_class($exception);
 			throw(new $exceptionType($exception->getMessage(), 0, $exception));
 		}
-		//convert and store the userId
+		//convert and store the postId
 		$this->postId = $uuid;
 	}
 	/**
@@ -117,7 +117,7 @@ class Post implements \JsonSerializable {
 	/**
 	 * mutator method for postUserId
 	 *
-	 * @param string | Uuid $newPostUserId new value of tweet profile id
+	 * @param string | Uuid $newPostUserId new value of postUserId
 	 * @throws \RangeException if $newPostUserId is not positive
 	 * @throws \TypeError if $newPostUserId is not an integer
 	 **/
@@ -129,7 +129,7 @@ class Post implements \JsonSerializable {
 			throw(new $exceptionType($exception->getMessage(), 0,$exception));
 		}
 		//convert and store the user id
-		$this->userPostId = $uuid;
+		$this->postUserId = $uuid;
 	}
 	/**
 	 * accessor method for postTitle
@@ -280,6 +280,88 @@ class Post implements \JsonSerializable {
 			throw(new $exceptionType($exception->getMessage(), 0, $exception));
 		}
 		$this->postDateTime = $newPostDateTime;
+	}
+	/**
+	 * inserts this Post into mySQL
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @throws \PDOException when mySQL related errors occur
+	 * @throws \TypeError if $pdo is not a PDO connection object
+	 **/
+	public function insert(\PDO $pdo) : void {
+		// create query template
+		$query = "INSERT INTO post(postId, postUserId, postTitle, postDetail, postSubject, postLocation, postDateTime) VALUES(:postId, :postUserId, :postTitle, :postDetail, :postSubject, :postLocation, :postDateTime)";
+		$statement = $pdo->prepare($query);
+		// bind the member variables to the place holders in the template
+		$formattedDate = $this->postDateTime->format("Y-m-d H:i:s.u");
+		$parameters = ["postId" => $this->postId->getBytes(), "postUserId" => $this->postUserId->getBytes(), "postTitle" => $this->postTitle, "postDetail" => $this->postDetail, "postSubject" => $this->postSubject, "postLocation" => $this->postLocation, "postDateTime" => $formattedDate];
+		$statement->execute($parameters);
+	}
+	/**
+	 * deletes this post from mySQL
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @throws \PDOException when mySQL related errors occur
+	 * @throws \TypeError if $pdo is not a PDO connection object
+	 **/
+	public function delete(\PDO $pdo) : void {
+		// create query template
+		$query = "DELETE FROM post WHERE postId = :postId";
+		$statement = $pdo->prepare($query);
+		// bind the member variables to the place holder in the template
+		$parameters = ["postId" => $this->postId->getBytes()];
+		$statement->execute($parameters);
+	}
+	/**
+	 * updates this Post in mySQL
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @throws \PDOException when mySQL related errors occur
+	 * @throws \TypeError if $pdo is not a PDO connection object
+	 **/
+	public function update(\PDO $pdo) : void {
+		// create query template
+		$query = "UPDATE post SET postId = :postId, postUserId = :postUserId, postTitle = :postTitle, postDetail = :postDetail, postSubject = :postSubject, postLocation = :postLocation, postDateTime = :postDateTime WHERE postId = :postId";
+		$statement = $pdo->prepare($query);
+		$formattedDate = $this->postDateTime->format("Y-m-d H:i:s.u");
+		$parameters = ["postId" => $this->postId->getBytes(),"postUserId" => $this->postUserId->getBytes(), "postTitle" => $this->postTitle, "postDetail" => $this->postDetail,  "postSubject" => $this->postSubject,  "postLocation" => $this->postLocation, "postDateTime" => $formattedDate];
+		$statement->execute($parameters);
+	}
+	/**
+	 * gets the Post by postId
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @param string $postId post id to search for
+	 * @return Post|null post found or null if not found
+	 * @throws \PDOException when mySQL related errors occur
+	 * @throws \TypeError when a variable are not the correct data type
+	 **/
+	public static function getPostByPostId(\PDO $pdo, string $postId) : ?Post {
+		// sanitize the postId before searching
+		try {
+			$postId = self::validateUuid($postId);
+		} catch(\InvalidArgumentException | \RangeException | \Exception | \TypeError $exception) {
+			throw(new \PDOException($exception->getMessage(), 0, $exception));
+		}
+		// create query template
+		$query = "SELECT postId, postUserId, postTitle, postDetail, postSubject, postLocation, postDateTime FROM post WHERE postId = :postId";
+		$statement = $pdo->prepare($query);
+		// bind the postId to the place holder in the template
+		$parameters = ["postId" => $postId->getBytes()];
+		$statement->execute($parameters);
+		// grab the post from mySQL
+		try {
+			$post = null;
+			$statement->setFetchMode(\PDO::FETCH_ASSOC);
+			$row = $statement->fetch();
+			if($row !== false) {
+				$post = new Post($row["postId"], $row["postUserId"], $row["postTitle"], $row["postDetail"], $row["postSubject"], $row["postLocation"], $row["postDateTime"]);
+			}
+		} catch(\Exception $exception) {
+			// if the row couldn't be converted, rethrow it
+			throw(new \PDOException($exception->getMessage(), 0, $exception));
+		}
+		return($post);
 	}
 	/**
 	 * formats the state variables for JSON serialization
